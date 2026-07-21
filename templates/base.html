@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ShopDjango{% endblock %}</title>
+  {% load static %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="{% url 'store:product_list' %}" class="nav-logo">Shop<span>Django</span></a>
+
+    <!-- Desktop navigation links -->
+    <div class="nav-links" id="nav-links">
+      <a href="{% url 'store:product_list' %}" class="{% if request.resolver_match.url_name == 'product_list' and not request.GET.q %}active{% endif %}">Home</a>
+      <a href="{% url 'store:product_list' %}#products">Shop</a>
+      <div class="nav-dropdown">
+        <span class="nav-dropdown-label">Categories</span>
+        <div class="nav-dropdown-menu">
+          {% for cat in nav_categories %}
+          <a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a>
+          {% empty %}
+          <span class="nav-dropdown-empty">No categories yet</span>
+          {% endfor %}
+        </div>
+      </div>
+      <a href="{% url 'store:about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a>
+      <a href="{% url 'store:contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a>
+    </div>
+
+    <form method="get" action="{% url 'store:product_list' %}" class="nav-search">
+      <input type="text" name="q" value="{{ query }}" placeholder="Search products..." class="nav-search-input" aria-label="Search products">
+      <button type="submit" class="nav-search-btn" aria-label="Search">&#x1F50D;</button>
+    </form>
+
+    <div class="nav-right">
+      <a href="{% if user.is_authenticated %}{% url 'store:wishlist' %}{% else %}{% url 'accounts:login' %}?next={% url 'store:wishlist' %}{% endif %}" class="icon-btn" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21s-7.5-4.6-10-9.1C.5 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4C11 6 12.4 5 14.4 5 18 5 19.5 8.6 22 11.9 19.5 16.4 12 21 12 21z"/>
+        </svg>
+        <span id="wishlist-count" class="icon-count">{{ wishlist_count }}</span>
+      </a>
+      <a href="{% url 'cart:cart_detail' %}" class="icon-btn" aria-label="Cart">
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1.3" fill="currentColor" stroke="none"/><circle cx="19" cy="21" r="1.3" fill="currentColor" stroke="none"/>
+          <path d="M2.5 3h2.4l2.2 12.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L22 8H6.2"/>
+        </svg>
+        <span id="cart-count" class="icon-count">{{ cart|length }}</span>
+      </a>
+
+      {% if user.is_authenticated %}
+      <div class="nav-dropdown profile-dropdown">
+        <span class="nav-dropdown-label">
+          <span class="profile-avatar-sm">{{ user.first_name|first|upper|default:user.username|first|upper }}</span>
+          <span class="label-text">My Account</span>
+        </span>
+        <div class="nav-dropdown-menu nav-dropdown-menu-right">
+          <a href="{% url 'accounts:profile' %}">Profile</a>
+          <a href="{% url 'orders:order_list' %}">Orders</a>
+          <a href="{% url 'store:wishlist' %}">Wishlist</a>
+          <a href="{% url 'accounts:password_change' %}">Settings</a>
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="nav-link-btn">Logout</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-sm">Login</a>
+      <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Register</a>
+      {% endif %}
+
+      <!-- Hamburger button — visible only on mobile -->
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+{% if messages %}
+<div class="messages">
+  {% for message in messages %}
+  <div class="message message-{{ message.tags }}">{{ message }} <button onclick="this.parentElement.remove()">✕</button></div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer class="footer">
+  <div class="footer-newsletter">
+    <div class="footer-newsletter-inner">
+      <div>
+        <h3>Join our newsletter</h3>
+        <p>Deals, new arrivals and restocks — straight to your inbox.</p>
+      </div>
+      <form id="newsletter-form" class="newsletter-form" action="{% url 'store:newsletter_subscribe' %}" method="post">
+        {% csrf_token %}
+        <input type="email" name="email" required placeholder="Your email address" class="newsletter-input">
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="nav-logo">Shop<span>Django</span></span>
+      <p>ShopDjango is a full-stack Django e-commerce store delivering quality products at fair prices, with secure checkout and real customer reviews.</p>
+      <div class="footer-social">
+        <a href="#" aria-label="Facebook" class="social-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M13.5 21v-7.6h2.55l.38-2.96h-2.93v-1.9c0-.86.24-1.44 1.47-1.44h1.57V4.8A21 21 0 0 0 14.1 4.7c-2.1 0-3.54 1.28-3.54 3.63v2.1H8v2.97h2.56V21z"/></svg></a>
+        <a href="#" aria-label="Twitter / X" class="social-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.9 3H22l-7.1 8.1L23 21h-6.9l-5.4-6.6L4.4 21H1.3l7.6-8.7L1 3h7.1l4.9 6.1L18.9 3zM17.7 19h1.9L7.4 4.9H5.4L17.7 19z"/></svg></a>
+        <a href="#" aria-label="Instagram" class="social-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.06 2.2.27 2.9.55.8.3 1.4.7 2 1.4.6.6 1 1.2 1.4 2 .3.7.5 1.7.5 2.9.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 2.2-.5 2.9-.4.8-.8 1.4-1.4 2-.6.6-1.2 1-2 1.4-.7.3-1.7.5-2.9.5-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2 0-2.2-.2-2.9-.5-.8-.4-1.4-.8-2-1.4-.6-.6-1-1.2-1.4-2-.3-.7-.5-1.7-.5-2.9C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c0-1.2.2-2.2.5-2.9.4-.8.8-1.4 1.4-2 .6-.6 1.2-1 2-1.4.7-.3 1.7-.5 2.9-.5C8.4 2.2 8.8 2.2 12 2.2zm0 3.05a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5zm0 11.13a4.38 4.38 0 1 1 0-8.76 4.38 4.38 0 0 1 0 8.76zm7.02-11.4a1.58 1.58 0 1 1-3.15 0 1.58 1.58 0 0 1 3.15 0z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-links">
+      <h4>Quick Links</h4>
+      <a href="{% url 'store:product_list' %}">Home</a>
+      <a href="{% url 'store:product_list' %}#products">Shop</a>
+      <a href="{% url 'store:about' %}">About</a>
+      <a href="{% url 'store:contact' %}">Contact</a>
+    </div>
+    <div class="footer-links">
+      <h4>Categories</h4>
+      {% for cat in nav_categories %}
+      <a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a>
+      {% empty %}
+      <span class="nav-dropdown-empty">No categories yet</span>
+      {% endfor %}
+    </div>
+    <div class="footer-links">
+      <h4>Customer Support</h4>
+      <a href="{% url 'store:contact' %}">Contact Us</a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'orders:order_list' %}">Track Order</a>
+      {% endif %}
+      <a href="{% url 'cart:cart_detail' %}">Cart</a>
+      <a href="{% url 'store:privacy_policy' %}">Privacy Policy</a>
+      <a href="{% url 'store:terms' %}">Terms &amp; Conditions</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 ShopDjango · Built with Django + SQLite / PostgreSQL</div>
+</footer>
+
+<!-- Quick View modal (populated client-side from the clicked card's data attributes) -->
+<div id="quick-view-modal" class="qv-modal" aria-hidden="true">
+  <div class="qv-backdrop" id="qv-backdrop"></div>
+  <div class="qv-dialog" role="dialog" aria-modal="true" aria-label="Quick view">
+    <button type="button" class="qv-close" id="qv-close" aria-label="Close">&times;</button>
+    <div class="qv-image-wrap">
+      <img id="qv-image" src="" alt="">
+    </div>
+    <div class="qv-info">
+      <span class="product-cat" id="qv-category"></span>
+      <h3 id="qv-name"></h3>
+      <div class="product-price big" id="qv-price"></div>
+      <p id="qv-stock" class="stock-info"></p>
+      <div class="qv-actions">
+        <button type="button" class="btn btn-primary btn-lg full-width" id="qv-add-to-cart">Add to Cart</button>
+        <a href="#" class="btn btn-outline full-width" id="qv-view-details">View Full Details</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Privacy Policy — ShopDjango{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="auth-card" style="max-width:760px;">
+    <h1 class="page-title">Privacy Policy</h1>
+    <p style="color:var(--muted);margin-bottom:1rem">Last updated: {% now "F Y" %}</p>
+    <div style="color:var(--muted);line-height:1.8;display:flex;flex-direction:column;gap:1rem">
+      <p>We collect the information you provide when creating an account, placing an order, or contacting support — such as your name, email, shipping address, and order history.</p>
+      <p>This information is used solely to process orders, manage your account, and improve your shopping experience. We do not sell your personal data to third parties.</p>
+      <p>Payment details are processed securely by Stripe and are never stored on our servers.</p>
+      <p>You may request access to, correction of, or deletion of your personal data at any time by contacting us via our <a href="{% url 'store:contact' %}">Contact page</a>.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

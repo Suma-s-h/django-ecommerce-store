@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Wishlist — ShopDjango{% endblock %}
+{% block content %}
+<section class="section">
+  <h1 class="page-title">My Wishlist</h1>
+  {% if wishlist.products.exists %}
+  <p class="results-info">Click the heart on a card to remove it from your wishlist.</p>
+  <div class="product-grid" id="wishlist-grid">
+    {% for product in wishlist.products.all %}
+      {% include 'store/_product_card.html' with product=product wishlisted_ids=wishlisted_ids %}
+    {% endfor %}
+  </div>
+  <template id="wishlist-empty-template">
+    <div class="empty-state">
+      <div class="empty-icon">&#x2665;</div>
+      <h3>Your wishlist is empty</h3>
+      <p>Save products you love to find them quickly later.</p>
+      <a href="{% url 'store:product_list' %}" class="btn btn-primary">Browse Products</a>
+    </div>
+  </template>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">&#x2665;</div>
+    <h3>Your wishlist is empty</h3>
+    <p>Save products you love to find them quickly later.</p>
+    <a href="{% url 'store:product_list' %}" class="btn btn-primary">Browse Products</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

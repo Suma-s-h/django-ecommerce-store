@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Terms & Conditions — ShopDjango{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="auth-card" style="max-width:760px;">
+    <h1 class="page-title">Terms &amp; Conditions</h1>
+    <p style="color:var(--muted);margin-bottom:1rem">Last updated: {% now "F Y" %}</p>
+    <div style="color:var(--muted);line-height:1.8;display:flex;flex-direction:column;gap:1rem">
+      <p>By placing an order on ShopDjango, you agree to pay the listed price for the products you select, plus any applicable shipping fees.</p>
+      <p>Orders are subject to product availability. We reserve the right to cancel or refuse any order at our discretion, including in cases of pricing errors or suspected fraud.</p>
+      <p>Returns are accepted within 30 days of delivery for unused items in original packaging. Refunds are issued to the original payment method.</p>
+      <p>Product reviews must reflect your genuine experience and may not contain unlawful, abusive, or misleading content.</p>
+      <p>Questions about these terms can be sent through our <a href="{% url 'store:contact' %}">Contact page</a>.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

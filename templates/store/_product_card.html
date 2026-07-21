@@ -1,0 +1,65 @@
+{% load static %}
+<div class="product-card" data-product-id="{{ product.id }}">
+  <div class="product-img-wrap">
+    <a href="{{ product.get_absolute_url }}" class="product-img-link">
+      {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+      {% else %}
+        <div class="product-img-placeholder">{{ product.name|first }}</div>
+      {% endif %}
+      <div class="card-overlay"><span class="overlay-btn">View Product</span></div>
+    </a>
+    {% if product.is_on_sale %}<span class="badge-sale">-{{ product.discount_percent }}%</span>{% endif %}
+    {% if product.stock == 0 %}<span class="badge-out">Out of stock</span>{% endif %}
+    <button type="button"
+            class="wishlist-heart{% if product.id in wishlisted_ids %} active{% endif %}"
+            data-toggle-url="{% url 'store:wishlist_toggle' product.id %}"
+            aria-label="Toggle wishlist"
+            aria-pressed="{% if product.id in wishlisted_ids %}true{% else %}false{% endif %}">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 21s-7.5-4.6-10-9.1C.5 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4C11 6 12.4 5 14.4 5 18 5 19.5 8.6 22 11.9 19.5 16.4 12 21 12 21z"/>
+      </svg>
+    </button>
+  </div>
+  <div class="product-info">
+    <span class="product-cat">{{ product.category.name }}</span>
+    <h3><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
+    {% if product.review_count %}
+    <div class="card-rating">
+      <span class="stars">{% with avg=product.avg_rating %}{% for i in "12345" %}{% if forloop.counter <= avg %}&#9733;{% else %}&#9734;{% endif %}{% endfor %}{% endwith %}</span>
+      <span class="card-rating-count">({{ product.review_count }})</span>
+    </div>
+    {% endif %}
+    <div class="product-price">
+      {% if product.is_on_sale %}
+        <span class="price-new">${{ product.discount_price }}</span>
+        <span class="price-old">${{ product.price }}</span>
+      {% else %}
+        <span class="price-new">${{ product.price }}</span>
+      {% endif %}
+    </div>
+    <div class="card-actions">
+      <button type="button" class="btn btn-outline btn-sm quick-view-btn"
+        data-name="{{ product.name }}"
+        data-category="{{ product.category.name }}"
+        data-price="{{ product.final_price }}"
+        data-old-price="{{ product.price }}"
+        data-on-sale="{% if product.is_on_sale %}1{% else %}0{% endif %}"
+        data-discount="{{ product.discount_percent }}"
+        data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
+        data-url="{{ product.get_absolute_url }}"
+        data-add-url="{% url 'cart:cart_add' product.id %}"
+        data-stock="{{ product.stock }}">
+        Quick View
+      </button>
+      {% if product.stock > 0 %}
+      <form method="post" action="{% url 'cart:cart_add' product.id %}" class="add-form" data-product="{{ product.name }}">
+        {% csrf_token %}<input type="hidden" name="quantity" value="1">
+        <button type="submit" class="btn btn-add">Add to Cart</button>
+      </form>
+      {% else %}
+      <button class="btn btn-add" disabled>Out of Stock</button>
+      {% endif %}
+    </div>
+  </div>
+</div>

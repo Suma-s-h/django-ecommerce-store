@@ -1,0 +1,13 @@
+Hi {{ order.first_name }},
+
+Your order #{{ order.id }} status has been updated to: {{ order.get_status_display|upper }}.
+
+{% if order.status == 'shipped' %}Your order is on its way! Expected delivery within 3–5 business days.
+{% elif order.status == 'delivered' %}Your order has been delivered. We hope you enjoy your purchase!
+{% elif order.status == 'cancelled' %}Your order has been cancelled. If you have questions, please contact support.
+{% endif %}
+
+Order Total: ${{ order.get_total_cost }}
+
+Thanks,
+ShopDjango

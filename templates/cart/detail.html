@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Your Cart — ShopDjango{% endblock %}
+{% block content %}
+<section class="section">
+  <h1 class="page-title">Your Cart</h1>
+  {% if cart|length %}
+  <div class="cart-layout">
+    <div class="cart-items">
+      {% for item in cart %}
+      <div class="cart-item">
+        <div class="cart-item-img">
+          {% if item.product.image %}<img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+          {% else %}<div class="product-img-placeholder sm">{{ item.product.name|first }}</div>{% endif %}
+        </div>
+        <div class="cart-item-info">
+          <h3><a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a></h3>
+          <span class="product-cat">{{ item.product.category.name }}</span>
+          <div class="cart-item-price">${{ item.price }} each</div>
+        </div>
+        <div class="cart-item-actions">
+          <form method="post" action="{% url 'cart:cart_update' item.product.id %}" class="qty-form">
+            {% csrf_token %}
+            <div class="qty-control sm">
+              <button type="button" onclick="adjustQty(this, -1)">−</button>
+              <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.product.stock }}" class="qty-input" onchange="this.form.submit()">
+              <button type="button" onclick="adjustQty(this, 1)">+</button>
+            </div>
+          </form>
+          <div class="cart-item-total">${{ item.total_price }}</div>
+          <form method="post" action="{% url 'cart:cart_remove' item.product.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-remove" title="Remove">🗑</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="cart-summary">
+      <h3>Order Summary</h3>
+      <div class="summary-row"><span>Subtotal</span><span>${{ cart.get_total_price }}</span></div>
+      {% if cart.coupon %}
+      <div class="summary-row" style="color:var(--accent)">
+        <span>Coupon "{{ cart.coupon.code }}" ({{ cart.coupon.discount_percent }}%)</span>
+        <span>-${{ cart.get_discount }}</span>
+      </div>
+      {% endif %}
+      <div class="summary-row">
+        <span>Shipping</span>
+        <span>{% if cart.get_shipping_cost == 0 %}Free{% else %}${{ cart.get_shipping_cost }}{% endif %}</span>
+      </div>
+      <div class="summary-row total">
+        <span>Total</span>
+        <span>${{ cart.get_grand_total }}</span>
+      </div>
+
+      <!-- Coupon -->
+      <div class="coupon-wrap">
+        {% if cart.coupon %}
+        <form method="post" action="{% url 'orders:coupon_remove' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-outline full-width">Remove Coupon "{{ cart.coupon.code }}"</button>
+        </form>
+        {% else %}
+        <form method="post" action="{% url 'orders:coupon_apply' %}" class="coupon-form">
+          {% csrf_token %}
+          <input type="text" name="code" placeholder="Coupon code" class="form-input coupon-input">
+          <button type="submit" class="btn btn-sm">Apply</button>
+        </form>
+        {% endif %}
+      </div>
+
+      <a href="{% url 'orders:order_create' %}" class="btn btn-primary btn-lg full-width" style="margin-top:1rem">Proceed to Checkout</a>
+      <a href="{% url 'store:product_list' %}" class="btn btn-outline full-width" style="margin-top:.5rem">Continue Shopping</a>
+      {% if cart.remaining_for_free_shipping %}
+      <p class="shipping-note">Add ${{ cart.remaining_for_free_shipping }} more for free shipping!</p>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🛒</div>
+    <h3>Your cart is empty</h3>
+    <p>Looks like you haven't added anything yet.</p>
+    <a href="{% url 'store:product_list' %}" class="btn btn-primary">Start Shopping</a>
+  </div>
+  {% endif %}
+</section>
+<script>
+function adjustQty(btn, delta) {
+  const form = btn.closest('.qty-form');
+  const input = form.querySelector('input[name="quantity"]');
+  const max = parseInt(input.max);
+  let val = parseInt(input.value) + delta;
+  input.value = Math.min(Math.max(0, val), max);
+  form.submit();
+}
+</script>
+{% endblock %}

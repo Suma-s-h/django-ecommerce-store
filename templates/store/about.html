@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}About Us — ShopDjango{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="auth-card" style="max-width:720px;text-align:center;">
+    <h1 class="page-title" style="margin-bottom:.5rem">About ShopDjango</h1>
+    <p style="color:var(--muted);line-height:1.8">
+      ShopDjango is a full-stack e-commerce store built with Django, designed to deliver a
+      fast, modern, and trustworthy shopping experience. We curate quality products across
+      electronics, fashion, home, books, and more — backed by secure checkout, real customer
+      reviews, and responsive support.
+    </p>
+  </div>
+
+  <div class="trust-bar" style="border:none;margin-top:2rem;">
+    <div class="trust-bar-inner" style="padding:0;">
+      <div class="trust-item">
+        <span class="trust-icon">&#x1F69A;</span>
+        <div class="trust-text"><strong>Fast Shipping</strong><span>Free over $50</span></div>
+      </div>
+      <div class="trust-item">
+        <span class="trust-icon">&#x1F512;</span>
+        <div class="trust-text"><strong>Secure Checkout</strong><span>Stripe-powered payments</span></div>
+      </div>
+      <div class="trust-item">
+        <span class="trust-icon">&#x1F91D;</span>
+        <div class="trust-text"><strong>Trusted by Thousands</strong><span>Real verified reviews</span></div>
+      </div>
+      <div class="trust-item">
+        <span class="trust-icon">&#x1F4AC;</span>
+        <div class="trust-text"><strong>Here to Help</strong><span>Reach us anytime</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="success-actions" style="margin-top:2.5rem">
+    <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">Shop Now</a>
+    <a href="{% url 'store:contact' %}" class="btn btn-outline btn-lg">Contact Us</a>
+  </div>
+</section>
+{% endblock %}

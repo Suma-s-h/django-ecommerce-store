@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Payment — ShopDjango{% endblock %}
+{% block content %}
+<section class="section">
+  <h1 class="page-title">Complete Your Payment</h1>
+  <div class="checkout-layout">
+
+    <div class="checkout-form-wrap">
+      <h3>Card Details</h3>
+      {% if client_secret and stripe_public_key %}
+      <form id="payment-form">
+        <div id="payment-element" style="margin-bottom:1.5rem"></div>
+        <div id="payment-message" class="form-error" style="display:none;margin-bottom:1rem"></div>
+        <button id="pay-btn" class="btn btn-primary btn-lg full-width">
+          Pay ${{ order.get_total_cost }}
+        </button>
+      </form>
+      {% else %}
+      <div class="payment-notice" style="margin-bottom:1.5rem">
+        <span>&#x2139;</span>
+        <span>
+          Stripe is not configured yet. Add your <code>STRIPE_PUBLIC_KEY</code> and
+          <code>STRIPE_SECRET_KEY</code> to your <code>.env</code> file to enable payments.
+        </span>
+      </div>
+      <a href="{% url 'store:product_list' %}" class="btn btn-primary">Continue Shopping</a>
+      {% endif %}
+    </div>
+
+    <div class="cart-summary">
+      <h3>Order #{{ order.id }}</h3>
+      {% for item in order.items.all %}
+      <div class="summary-item">
+        <span>{{ item.product.name }} &times; {{ item.quantity }}</span>
+        <span>${{ item.get_cost }}</span>
+      </div>
+      {% endfor %}
+      <hr>
+      {% if order.discount %}
+      <div class="summary-row"><span>Subtotal</span><span>${{ order.get_items_total }}</span></div>
+      <div class="summary-row" style="color:var(--accent)">
+        <span>Discount ({{ order.discount }}%)</span>
+        <span>-${{ order.get_discount_amount }}</span>
+      </div>
+      {% endif %}
+      <div class="summary-row total"><span>Total</span><span>${{ order.get_total_cost }}</span></div>
+      <p class="shipping-note" style="margin-top:.75rem">Shipping calculated at checkout.</p>
+    </div>
+
+  </div>
+</section>
+
+{% if client_secret and stripe_public_key %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+const stripe = Stripe('{{ stripe_public_key }}');
+const elements = stripe.elements({ clientSecret: '{{ client_secret }}' });
+const paymentElement = elements.create('payment');
+paymentElement.mount('#payment-element');
+
+document.getElementById('payment-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.textContent = 'Processing…';
+
+  const { error } = await stripe.confirmPayment({
+    elements,
+    confirmParams: {
+      return_url: '{{ request.scheme }}://{{ request.get_host }}{% url "orders:payment_complete" order.id %}',
+    },
+  });
+
+  if (error) {
+    const msg = document.getElementById('payment-message');
+    msg.textContent = error.message;
+    msg.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Pay ${{ order.get_total_cost }}';
+  }
+});
+</script>
+{% endif %}
+{% endblock %}

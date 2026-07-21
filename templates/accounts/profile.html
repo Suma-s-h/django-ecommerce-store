@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}My Profile — ShopDjango{% endblock %}
+{% block content %}
+<section class="section">
+  <h1 class="page-title">My Profile</h1>
+  <div class="profile-layout">
+    <div class="profile-card">
+      <div class="profile-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+      <h2>{{ user.get_full_name|default:user.username }}</h2>
+      <p class="profile-email">{{ user.email }}</p>
+      <p class="profile-member">Member since {{ user.date_joined|date:"M Y" }}</p>
+    </div>
+    <div class="profile-form-wrap">
+      <h3>Update Profile</h3>
+      <form method="post" class="auth-form">
+        {% csrf_token %}
+        <div class="form-row two">
+          <div class="form-group"><label>First Name</label>{{ form.first_name }}</div>
+          <div class="form-group"><label>Last Name</label>{{ form.last_name }}</div>
+        </div>
+        <div class="form-group"><label>Email</label>{{ form.email }}</div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{% url 'accounts:password_change' %}" class="btn btn-outline" style="margin-left:.5rem">Change Password</a>
+      </form>
+      {% if recent_orders %}
+      <h3 style="margin-top:2rem">Recent Orders</h3>
+      <table class="orders-table">
+        <thead><tr><th>Order #</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for order in recent_orders %}
+          <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.created|date:"M d, Y" }}</td>
+            <td>${{ order.get_total_cost }}</td>
+            <td><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+            <td><a href="{% url 'orders:order_detail' order.id %}" class="btn btn-sm">View</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

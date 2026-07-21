@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.id }} — ShopDjango{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="breadcrumb"><a href="{% url 'orders:order_list' %}">My Orders</a> / Order #{{ order.id }}</div>
+  <div class="order-detail-layout">
+    <div class="order-items-wrap">
+      <h2>Order #{{ order.id }}</h2>
+      <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+      <table class="orders-table" style="margin-top:1rem">
+        <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Subtotal</th></tr></thead>
+        <tbody>
+          {% for item in order.items.all %}
+          <tr>
+            <td>{{ item.product.name }}</td>
+            <td>${{ item.price }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>${{ item.get_cost }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="summary-row total" style="margin-top:1rem"><span>Order Total</span><span>${{ order.get_total_cost }}</span></div>
+    </div>
+    <div class="order-info-card">
+      <h3>Shipping Details</h3>
+      <p>{{ order.first_name }} {{ order.last_name }}</p>
+      <p>{{ order.address }}</p>
+      <p>{{ order.city }}, {{ order.postal_code }}</p>
+      <p>{{ order.country }}</p>
+      <p>{{ order.email }}</p>
+      {% if order.notes %}<p><em>Notes: {{ order.notes }}</em></p>{% endif %}
+      <a href="{% url 'orders:order_list' %}" class="btn btn-outline" style="margin-top:1rem">Back to Orders</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

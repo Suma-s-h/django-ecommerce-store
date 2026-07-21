@@ -1,0 +1,6 @@
+New contact form submission — ShopDjango
+
+From: {{ name }} <{{ email }}>
+Subject: {{ subject }}
+
+{{ message }}

@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Shop — ShopDjango{% endblock %}
+{% block content %}
+
+{% if not category and not query %}
+
+{# ── Hero ──────────────────────────────────────────────────────────────────── #}
+<div class="hero-wrap">
+  <div class="hero">
+    <div class="hero-content fade-in-up">
+      <p class="hero-eyebrow">New arrivals this season</p>
+      <h1 class="hero-title">Quality goods,<br><em>fair prices.</em></h1>
+      <p class="hero-sub">Discover our curated collection of premium products, delivered fast.</p>
+      <div class="hero-actions">
+        <a href="#products" class="btn btn-primary btn-lg">Shop Now</a>
+        <a href="#categories" class="btn btn-outline btn-lg">Browse Categories</a>
+      </div>
+    </div>
+    <div class="hero-visual fade-in-up fade-in-delay">
+      {% if featured %}
+      <div class="hero-showcase">
+        <div class="hero-showcase-main float-anim">
+          {% with product=featured.0 %}
+          <a href="{{ product.get_absolute_url }}" class="hero-showcase-link">
+            {% if product.image %}
+              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="hero-showcase-img">
+            {% else %}
+              <div class="hero-showcase-placeholder">{{ product.name|first }}</div>
+            {% endif %}
+            {% if product.is_on_sale %}
+              <span class="badge-sale big">-{{ product.discount_percent }}%</span>
+            {% endif %}
+            <div class="hero-showcase-info">
+              <span>{{ product.name }}</span>
+              <strong>${{ product.final_price }}</strong>
+            </div>
+          </a>
+          {% endwith %}
+        </div>
+        {% if featured|length > 1 %}
+        <div class="hero-showcase-side">
+          {% for product in featured|slice:"1:3" %}
+          <a href="{{ product.get_absolute_url }}" class="hero-showcase-mini float-anim float-delay-{{ forloop.counter }}">
+            {% if product.image %}
+              <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% else %}
+              <div class="hero-showcase-placeholder mini">{{ product.name|first }}</div>
+            {% endif %}
+            <div class="hero-showcase-info">
+              <span>{{ product.name }}</span>
+              <strong>${{ product.final_price }}</strong>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="hero-deco">
+        <div class="hero-deco-circle large float-anim"></div>
+        <div class="hero-deco-circle medium float-anim float-delay-1"></div>
+        <div class="hero-deco-circle small float-anim float-delay-2"></div>
+      </div>
+      {% endif %}
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-n">500+</span><span class="stat-l">Products</span></div>
+        <div class="stat"><span class="stat-n">Free</span><span class="stat-l">Shipping $50+</span></div>
+        <div class="stat"><span class="stat-n">24h</span><span class="stat-l">Support</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Trust bar ─────────────────────────────────────────────────────────────── #}
+<div class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-item">
+      <span class="trust-icon">&#x1F69A;</span>
+      <div class="trust-text">
+        <strong>Free Shipping</strong>
+        <span>On orders over $50</span>
+      </div>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon">&#x1F504;</span>
+      <div class="trust-text">
+        <strong>Easy Returns</strong>
+        <span>30-day return policy</span>
+      </div>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon">&#x1F512;</span>
+      <div class="trust-text">
+        <strong>Secure Payment</strong>
+        <span>SSL encrypted checkout</span>
+      </div>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon">&#x2B50;</span>
+      <div class="trust-text">
+        <strong>Top Quality</strong>
+        <span>Curated premium products</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Featured products ─────────────────────────────────────────────────────── #}
+{% if featured %}
+<section class="featured-section reveal">
+  <div class="featured-inner">
+    <div class="section-header">
+      <div>
+        <p class="section-eyebrow">Hand-picked for you</p>
+        <h2>Featured Products</h2>
+      </div>
+      <a href="{% url 'store:product_list' %}" class="btn btn-outline">View all &rarr;</a>
+    </div>
+    <div class="product-grid">
+      {% for product in featured %}
+        {% include 'store/_product_card.html' with product=product wishlisted_ids=wishlisted_ids %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ── New Arrivals ───────────────────────────────────────────────────────────── #}
+{% if new_arrivals %}
+<section class="section reveal">
+  <div class="section-header">
+    <div>
+      <p class="section-eyebrow">Just landed</p>
+      <h2>New Arrivals</h2>
+    </div>
+    <a href="{% url 'store:product_list' %}?sort=newest" class="btn btn-outline">View all &rarr;</a>
+  </div>
+  <div class="product-grid">
+    {% for product in new_arrivals %}
+      {% include 'store/_product_card.html' with product=product wishlisted_ids=wishlisted_ids %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ── Flash Sale ─────────────────────────────────────────────────────────────── #}
+{% if flash_sale %}
+<section class="section flash-sale-section reveal">
+  <div class="section-header">
+    <div>
+      <p class="section-eyebrow flash-eyebrow">&#x26A1; Limited time</p>
+      <h2>Flash Sale</h2>
+    </div>
+    <a href="{% url 'store:product_list' %}" class="btn btn-outline">View all &rarr;</a>
+  </div>
+  <div class="product-grid">
+    {% for product in flash_sale %}
+      {% include 'store/_product_card.html' with product=product wishlisted_ids=wishlisted_ids %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ── Best Sellers ───────────────────────────────────────────────────────────── #}
+{% if best_sellers %}
+<section class="section reveal">
+  <div class="section-header">
+    <div>
+      <p class="section-eyebrow">Customer favorites</p>
+      <h2>Best Sellers</h2>
+    </div>
+    <a href="{% url 'store:product_list' %}" class="btn btn-outline">View all &rarr;</a>
+  </div>
+  <div class="product-grid">
+    {% for product in best_sellers %}
+      {% include 'store/_product_card.html' with product=product wishlisted_ids=wishlisted_ids %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ── Trending ───────────────────────────────────────────────────────────────── #}
+{% if trending %}
+<section class="section reveal">
+  <div class="section-header">
+    <div>
+      <p class="section-eyebrow">Most wishlisted</p>
+      <h2>Trending Products</h2>
+    </div>
+    <a href="{% url 'store:product_list' %}" class="btn btn-outline">View all &rarr;</a>
+  </div>
+  <div class="product-grid">
+    {% for product in trending %}
+      {% include 'store/_product_card.html' with product=product wishlisted_ids=wishlisted_ids %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ── Shop by Category ────────────────────────────────────────────────────────── #}
+{% if categories %}
+<section class="section reveal" id="categories">
+  <div class="section-header">
+    <div>
+      <p class="section-eyebrow">Browse</p>
+      <h2>Shop by Category</h2>
+    </div>
+  </div>
+  <div class="category-grid">
+    {% for cat in categories %}
+    <a href="{{ cat.get_absolute_url }}" class="category-card">
+      {% if cat.image %}
+        <img src="{{ cat.image.url }}" alt="{{ cat.name }}" loading="lazy">
+      {% else %}
+        <div class="category-card-placeholder">{{ cat.name|first }}</div>
+      {% endif %}
+      <div class="category-card-label">{{ cat.name }}</div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% endif %}{# end: not category and not query #}
+
+{# ── All products ──────────────────────────────────────────────────────────── #}
+<section class="section" id="products">
+  <div class="shop-layout">
+    <aside class="sidebar">
+      <h3 class="sidebar-title">Categories</h3>
+      <ul class="cat-list">
+        <li><a href="{% url 'store:product_list' %}" class="{% if not category %}active{% endif %}">All Products</a></li>
+        {% for cat in categories %}
+        <li><a href="{{ cat.get_absolute_url }}" class="{% if category.slug == cat.slug %}active{% endif %}">{{ cat.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </aside>
+    <div class="shop-main">
+      <div class="shop-toolbar">
+        <form method="get" class="search-form">
+          <input type="text" name="q" value="{{ query }}" placeholder="Search products…" class="search-input">
+          {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+          <button type="submit" class="btn btn-sm">Search</button>
+        </form>
+        <select class="sort-select" onchange="sortProducts(this.value)">
+          <option value="">Sort by</option>
+          <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+          <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price &uarr;</option>
+          <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price &darr;</option>
+        </select>
+      </div>
+
+      {% if category %}
+      <div class="listing-header">
+        <h2>{{ category.name }}</h2>
+        <span class="listing-count">{{ page_obj.paginator.count }} product{{ page_obj.paginator.count|pluralize }}</span>
+      </div>
+      {% elif query %}
+      <p class="results-info">{{ page_obj.paginator.count }} result{{ page_obj.paginator.count|pluralize }} for &ldquo;<strong>{{ query }}</strong>&rdquo;</p>
+      {% else %}
+      <div class="listing-header">
+        <h2>All Products</h2>
+        <span class="listing-count">{{ page_obj.paginator.count }} product{{ page_obj.paginator.count|pluralize }}</span>
+      </div>
+      {% endif %}
+
+      {% if products %}
+      <div class="product-grid">
+        {% for product in products %}
+          {% include 'store/_product_card.html' with product=product wishlisted_ids=wishlisted_ids %}
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">&#x1F50D;</div>
+        <h3>No products found</h3>
+        <p>Try a different search or browse all categories.</p>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary">View All Products</a>
+      </div>
+      {% endif %}
+
+      {% if page_obj.has_other_pages %}
+      <nav class="pagination" aria-label="Product pages">
+        {% if page_obj.has_previous %}
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ page_obj.previous_page_number }}" class="page-btn">&larr; Prev</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="page-btn active">{{ num }}</span>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?{% if query %}q={{ query }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ num }}" class="page-btn">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}page={{ page_obj.next_page_number }}" class="page-btn">Next &rarr;</a>
+        {% endif %}
+      </nav>
+      {% endif %}
+
+    </div>
+  </div>
+</section>
+{% endblock %}

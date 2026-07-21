@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} — ShopDjango{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="breadcrumb">
+    <a href="{% url 'store:product_list' %}">Shop</a> /
+    <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a> /
+    <span>{{ product.name }}</span>
+  </div>
+  <div class="product-detail-layout">
+    <div class="product-detail-img">
+      {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">
+      {% else %}<div class="product-img-placeholder large">{{ product.name|first }}</div>{% endif %}
+      {% if product.is_on_sale %}<span class="badge-sale big">-{{ product.discount_percent }}% OFF</span>{% endif %}
+    </div>
+    <div class="product-detail-info">
+      <span class="product-cat">{{ product.category.name }}</span>
+      <h1>{{ product.name }}</h1>
+      <div class="product-price big">
+        {% if product.is_on_sale %}
+          <span class="price-new">${{ product.discount_price }}</span>
+          <span class="price-old">${{ product.price }}</span>
+        {% else %}
+          <span class="price-new">${{ product.price }}</span>
+        {% endif %}
+      </div>
+      <p class="product-description">{{ product.description }}</p>
+      <div class="stock-info {% if product.stock == 0 %}out{% endif %}">
+        {% if product.stock > 5 %}✅ In Stock ({{ product.stock }} available)
+        {% elif product.stock > 0 %}⚠️ Only {{ product.stock }} left!
+        {% else %}❌ Out of Stock{% endif %}
+      </div>
+      {% if product.review_count %}
+      <div class="rating-summary">
+        <span class="stars">{% with avg=product.avg_rating %}{% for i in "12345" %}{% if forloop.counter <= avg %}&#9733;{% else %}&#9734;{% endif %}{% endfor %}{% endwith %}</span>
+        <span>{{ product.avg_rating }}/5 ({{ product.review_count }} review{{ product.review_count|pluralize }})</span>
+      </div>
+      {% endif %}
+      {% if product.stock > 0 %}
+      <form method="post" action="{% url 'cart:cart_add' product.id %}" class="detail-add-form">
+        {% csrf_token %}
+        <div class="qty-row">
+          <label>Qty</label>
+          <div class="qty-control">
+            <button type="button" onclick="changeQty(-1)">−</button>
+            <input type="number" name="quantity" id="qty" value="1" min="1" max="{{ product.stock }}" class="qty-input">
+            <button type="button" onclick="changeQty(1)">+</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="margin-top:.75rem">Add to Cart</button>
+      </form>
+      {% endif %}
+      {% if user.is_authenticated %}
+      <form method="post" action="{% url 'store:wishlist_toggle' product.id %}" style="margin-top:.5rem">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline{% if in_wishlist %} active{% endif %}">
+          {% if in_wishlist %}&#x2665; Saved to Wishlist{% else %}&#x2661; Add to Wishlist{% endif %}
+        </button>
+      </form>
+      {% endif %}
+      <div class="product-meta">
+        <span>Category: <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a></span>
+      </div>
+    </div>
+  </div>
+
+  {% if related %}
+  <div class="section-header" style="margin-top:3rem">
+    <h2>You may also like</h2>
+  </div>
+  <div class="product-grid">
+    {% for p in related %}
+      {% include 'store/_product_card.html' with product=p wishlisted_ids=wishlisted_ids %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Reviews -->
+  <div class="section-header" style="margin-top:3rem">
+    <h2>Customer Reviews</h2>
+    <span>{{ product.review_count }} review{{ product.review_count|pluralize }}</span>
+  </div>
+
+  {% if user.is_authenticated and not user_review %}
+  <div class="review-form-wrap">
+    <h3>Leave a Review</h3>
+    <form method="post" action="{% url 'store:review_create' product.id %}" class="review-form">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Rating</label>
+        <div class="star-picker">
+          {% for choice in review_form.rating %}
+          <label class="star-label">
+            {{ choice.tag }}
+            <span>{% if forloop.counter == 1 %}&#9733;{% elif forloop.counter == 2 %}&#9733;&#9733;{% elif forloop.counter == 3 %}&#9733;&#9733;&#9733;{% elif forloop.counter == 4 %}&#9733;&#9733;&#9733;&#9733;{% else %}&#9733;&#9733;&#9733;&#9733;&#9733;{% endif %}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Title</label>
+        {{ review_form.title }}
+      </div>
+      <div class="form-group">
+        <label>Review</label>
+        {{ review_form.body }}
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Review</button>
+    </form>
+  </div>
+  {% elif user.is_authenticated and user_review %}
+  <p style="color:var(--muted);margin-bottom:1.5rem">You reviewed this product on {{ user_review.created|date:"N j, Y" }}.</p>
+  {% else %}
+  <p style="color:var(--muted);margin-bottom:1.5rem"><a href="{% url 'accounts:login' %}?next={{ request.path }}">Log in</a> to leave a review.</p>
+  {% endif %}
+
+  {% if reviews %}
+  <div class="reviews-list">
+    {% for review in reviews %}
+    <div class="review-card">
+      <div class="review-header">
+        <span class="review-stars">{% for i in "12345" %}{% if forloop.counter <= review.rating %}&#9733;{% else %}&#9734;{% endif %}{% endfor %}</span>
+        <strong>{{ review.title }}</strong>
+        <span class="review-meta">by {{ review.user.get_full_name|default:review.user.username }} &middot; {{ review.created|date:"N j, Y" }}</span>
+      </div>
+      <p class="review-body">{{ review.body }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p style="color:var(--muted)">No reviews yet. Be the first!</p>
+  {% endif %}
+
+</section>
+<script>
+function changeQty(delta) {
+  const input = document.getElementById('qty');
+  const max = parseInt(input.max);
+  let val = parseInt(input.value) + delta;
+  input.value = Math.min(Math.max(1, val), max);
+}
+</script>
+{% endblock %}

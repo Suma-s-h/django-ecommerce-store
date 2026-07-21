@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Checkout — ShopDjango{% endblock %}
+{% block content %}
+<section class="section">
+  <h1 class="page-title">Checkout</h1>
+  <div class="checkout-layout">
+    <div class="checkout-form-wrap">
+      <h3>Shipping Details</h3>
+      <form method="post" class="checkout-form">
+        {% csrf_token %}
+        <div class="form-row two">
+          <div class="form-group">
+            <label>First Name</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}<span class="form-error">{{ form.first_name.errors.0 }}</span>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}<span class="form-error">{{ form.last_name.errors.0 }}</span>{% endif %}
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          {{ form.email }}
+          {% if form.email.errors %}<span class="form-error">{{ form.email.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>Street Address</label>
+          {{ form.address }}
+          {% if form.address.errors %}<span class="form-error">{{ form.address.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="form-row two">
+          <div class="form-group">
+            <label>City</label>
+            {{ form.city }}
+            {% if form.city.errors %}<span class="form-error">{{ form.city.errors.0 }}</span>{% endif %}
+          </div>
+          <div class="form-group">
+            <label>Postal Code</label>
+            {{ form.postal_code }}
+            {% if form.postal_code.errors %}<span class="form-error">{{ form.postal_code.errors.0 }}</span>{% endif %}
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          {{ form.country }}
+          {% if form.country.errors %}<span class="form-error">{{ form.country.errors.0 }}</span>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>Order Notes (optional)</label>
+          {{ form.notes }}
+        </div>
+        <div class="payment-notice">
+          <span>&#x1F512;</span>
+          <span>Your payment details will be collected securely on the next step.</span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg full-width">Continue to Payment</button>
+      </form>
+    </div>
+
+    <div class="cart-summary">
+      <h3>Order Summary</h3>
+      {% for item in cart %}
+      <div class="summary-item">
+        <span>{{ item.product.name }} &times; {{ item.quantity }}</span>
+        <span>${{ item.total_price }}</span>
+      </div>
+      {% endfor %}
+      <hr>
+      <div class="summary-row"><span>Subtotal</span><span>${{ cart.get_total_price }}</span></div>
+      {% if cart.coupon %}
+      <div class="summary-row" style="color:var(--accent)">
+        <span>Coupon "{{ cart.coupon.code }}" ({{ cart.coupon.discount_percent }}%)</span>
+        <span>-${{ cart.get_discount }}</span>
+      </div>
+      {% endif %}
+      <div class="summary-row">
+        <span>Shipping</span>
+        <span>{% if cart.get_shipping_cost == 0 %}Free{% else %}${{ cart.get_shipping_cost }}{% endif %}</span>
+      </div>
+      <div class="summary-row total"><span>Total</span><span>${{ cart.get_grand_total }}</span></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
